@@ -1,3 +1,6 @@
+#ifndef __IMAGE_H__
+#define __IMAGE_H__
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,3 +23,5 @@ extern inline unsigned char image_get_pixel(image *img, unsigned int x, unsigned
 char image_write_png(image *img, FILE *file);
 
 char image_downsample(image *src, image *dst);
+
+#endif

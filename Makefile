@@ -1,12 +1,16 @@
-all: kinect
+all: kinect-depth-ascii
 
-CFLAGS=-O3
+CFLAGS=-O3 -I/usr/local/include/libfreenect
+LDFLAGS=-L/usr/local/lib -lpng -lfreenect
 
-kinect: image.o kinect.c
-	cc $(CFLAGS) -I/usr/local/include/libfreenect -L/usr/local/lib -lpng -lfreenect -o kinect image.o kinect.c
+kinect-depth-ascii: kinect.o image.o kinect-depth-ascii.c
+	cc $(CFLAGS) $(LDFLAGS) -o kinect-depth-ascii $^
+
+kinect.o: kinect.h kinect.c
+	cc $(CFLAGS) -c kinect.c
 
 image.o: image.h image.c
 	cc $(CFLAGS) -c image.c
 
 clean:
-	rm -f image.o kinect
+	rm -f *.o kinect-depth-ascii
