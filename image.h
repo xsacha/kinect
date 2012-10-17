@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "buffer.h"
 
 struct Image_t {
   unsigned int width;
@@ -21,6 +22,8 @@ extern inline void Image_set_pixel(Image *, unsigned int, unsigned int, unsigned
 extern inline unsigned char Image_get_pixel(Image *, unsigned int, unsigned int);
 
 char Image_write_png(Image *, FILE *);
+
+char Image_get_png(Image *, Buffer *);
 
 char Image_downsample(Image *, Image *);
 

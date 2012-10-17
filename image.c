@@ -38,23 +38,39 @@ extern inline unsigned char Image_get_pixel(Image *img, unsigned int x, unsigned
   return img->data[y * img->width + x];
 }
 
-char Image_write_png(Image *img, FILE *file) {
+char Image_write_png_internal(Image *img, FILE *file, void *write_io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn) {
   png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png) return 0;
 
   png_infop info = png_create_info_struct(png);
-  if (!info) return 0;
+  if (!info) {
+    png_destroy_write_struct(&png, (png_infopp)NULL);
+    return 0;
+  }
 
-  if (setjmp(png_jmpbuf(png))) return 0;
-  png_init_io(png, file);
+  if (setjmp(png_jmpbuf(png))) {
+    png_destroy_info_struct(png, (png_infopp)&info);
+    png_destroy_write_struct(&png, (png_infopp)&info);
+    return 0;
+  }
 
-  if (setjmp(png_jmpbuf(png))) return 0;
+  if (file == NULL) {
+    png_set_write_fn(png, write_io_ptr, write_data_fn, output_flush_fn);
+  } else {
+    png_init_io(png, file);
+  }
+
+  if (setjmp(png_jmpbuf(png))) {
+    png_destroy_write_struct(&png, (png_infopp)&info);
+    return 0;
+  }
+
   png_set_IHDR(png, info, img->width, img->height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
   png_write_info(png, info);
 
   int x, y;
   unsigned char pixel;
-  png_bytep row = (png_bytep)malloc(640 * 3 * sizeof(png_byte));
+  png_bytep row = (png_bytep)malloc(img->width * 3 * sizeof(png_byte));
 
   for (y = 0; y < img->height; y++) {
     for (x = 0; x < img->width; x++) {
@@ -68,9 +84,25 @@ char Image_write_png(Image *img, FILE *file) {
 
   free(row);
   png_write_end(png, NULL);
-  png_free_data(png, info, PNG_FREE_ALL, -1);
-  png_destroy_write_struct(&png, (png_infopp)NULL);
+  png_destroy_info_struct(png, (png_infopp)&info);
+  png_destroy_write_struct(&png, (png_infopp)&info);
   return 1;
+}
+
+char Image_write_png(Image *img, FILE *file) {
+  return Image_write_png_internal(img, file, NULL, NULL, NULL);
+}
+
+void Image_get_png_write_data(png_structp png, png_bytep data, png_size_t length) {
+  Buffer *buffer = (Buffer *)png_get_io_ptr(png);
+  Buffer_append(buffer, length, data);
+}
+
+void Image_get_png_flush_data(png_structp png) {
+}
+
+char Image_get_png(Image *img, Buffer *buffer) {
+  return Image_write_png_internal(img, NULL, (void *)buffer, Image_get_png_write_data, Image_get_png_flush_data);
 }
 
 char Image_downsample(Image *src, Image *dst) {
