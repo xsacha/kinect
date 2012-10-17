@@ -1,4 +1,4 @@
-/*.o
-/*.png
 /kinect*
 !/kinect*.*
+/*.o
+/*.png
