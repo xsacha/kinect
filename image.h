@@ -4,24 +4,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct image_t {
+struct Image_t {
   unsigned int width;
   unsigned int height;
   unsigned char *data;
 };
 
-typedef struct image_t image;
+typedef struct Image_t Image;
 
-image *image_create(unsigned int width, unsigned int height);
+Image *Image_create(unsigned int, unsigned int);
 
-void image_destroy(image *img);
+void Image_destroy(Image *);
 
-extern inline void image_set_pixel(image *img, unsigned int x, unsigned int y, unsigned char pixel);
+extern inline void Image_set_pixel(Image *, unsigned int, unsigned int, unsigned char);
 
-extern inline unsigned char image_get_pixel(image *img, unsigned int x, unsigned int y);
+extern inline unsigned char Image_get_pixel(Image *, unsigned int, unsigned int);
 
-char image_write_png(image *img, FILE *file);
+char Image_write_png(Image *, FILE *);
 
-char image_downsample(image *src, image *dst);
+char Image_downsample(Image *, Image *);
 
 #endif

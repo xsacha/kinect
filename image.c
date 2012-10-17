@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "image.h"
 
-image *image_create(unsigned int width, unsigned int height) {
-  image *img = (image *)malloc(sizeof(image));
+Image *Image_create(unsigned int width, unsigned int height) {
+  Image *img = (Image *)malloc(sizeof(Image));
   if (!img) return 0;
 
   img->data = calloc(width * height, 1);
@@ -19,26 +19,26 @@ image *image_create(unsigned int width, unsigned int height) {
   return img;
 }
 
-void image_destroy(image *img) {
+void Image_destroy(Image *img) {
   if (img) {
     if (img->data) free(img->data);
     free(img);
   }
 }
 
-extern inline void image_set_pixel(image *img, unsigned int x, unsigned int y, unsigned char pixel) {
+extern inline void Image_set_pixel(Image *img, unsigned int x, unsigned int y, unsigned char pixel) {
   if (x >= img->width) return;
   if (y >= img->height) return;
   img->data[y * img->width + x] = pixel;
 }
 
-extern inline unsigned char image_get_pixel(image *img, unsigned int x, unsigned int y) {
+extern inline unsigned char Image_get_pixel(Image *img, unsigned int x, unsigned int y) {
   if (x >= img->width) return 0;
   if (y >= img->height) return 0;
   return img->data[y * img->width + x];
 }
 
-char image_write_png(image *img, FILE *file) {
+char Image_write_png(Image *img, FILE *file) {
   png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png) return 0;
 
@@ -58,7 +58,7 @@ char image_write_png(image *img, FILE *file) {
 
   for (y = 0; y < img->height; y++) {
     for (x = 0; x < img->width; x++) {
-      pixel = image_get_pixel(img, x, y);
+      pixel = Image_get_pixel(img, x, y);
       row[(x * 3) + 0] = pixel;
       row[(x * 3) + 1] = pixel;
       row[(x * 3) + 2] = pixel;
@@ -73,7 +73,7 @@ char image_write_png(image *img, FILE *file) {
   return 1;
 }
 
-char image_downsample(image *src, image *dst) {
+char Image_downsample(Image *src, Image *dst) {
   if (dst->width > src->width) return 0;
   if (dst->height > src->height) return 0;
 
@@ -86,14 +86,14 @@ char image_downsample(image *src, image *dst) {
       dst_y = lround((double) (dst->height * src_y) / (double) src->height);
       dst_offset = dst_y * dst->width + dst_x;
 
-      src_pixel = image_get_pixel(src, src_x, src_y);
+      src_pixel = Image_get_pixel(src, src_x, src_y);
 
       if (dst_offset > dst_offset_max) {
-        image_set_pixel(dst, dst_x, dst_y, src_pixel);
+        Image_set_pixel(dst, dst_x, dst_y, src_pixel);
         dst_offset_max = dst_offset;
       } else {
-        dst_pixel = image_get_pixel(dst, dst_x, dst_y);
-        image_set_pixel(dst, dst_x, dst_y, (src_pixel + dst_pixel) / 2);
+        dst_pixel = Image_get_pixel(dst, dst_x, dst_y);
+        Image_set_pixel(dst, dst_x, dst_y, (src_pixel + dst_pixel) / 2);
       }
     }
   }

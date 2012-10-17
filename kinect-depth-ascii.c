@@ -33,15 +33,15 @@ struct winsize reset_frame(FILE *file) {
 }
 
 void draw_depth_image(FILE *file, int width, int height) {
-  image *img = image_create(width, height);
-  image_downsample(kinect_depth_image, img);
+  Image *img = Image_create(width, height);
+  Image_downsample(kinect_depth_image, img);
 
   int x, y;
   unsigned char pixel, c;
 
   for (y = 0; y < height; y++) {
     for (x = 0; x < width; x++) {
-      pixel = image_get_pixel(img, x, y);
+      pixel = Image_get_pixel(img, x, y);
 
       if (pixel < 0x40) {
         c = '%';
@@ -58,7 +58,7 @@ void draw_depth_image(FILE *file, int width, int height) {
     fputc('\n', file);
   }
 
-  image_destroy(img);
+  Image_destroy(img);
 }
 
 int main() {

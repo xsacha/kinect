@@ -8,7 +8,7 @@ void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t ti
 
   for (y = 0; y < 480; y++) {
     for (x = 0; x < 640; x++) {
-      image_set_pixel(kinect_depth_image, x, y, depth[y * 640 + x]);
+      Image_set_pixel(kinect_depth_image, x, y, depth[y * 640 + x]);
     }
   }
 }
@@ -37,7 +37,7 @@ int kinect_initialize() {
     return 0;
   }
 
-  kinect_depth_image = image_create(640, 480);
+  kinect_depth_image = Image_create(640, 480);
 
   freenect_set_led(kinect_device, LED_GREEN);
   freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
@@ -61,6 +61,7 @@ void kinect_shutdown() {
     return;
   }
 
+  Image_destroy(kinect_depth_image);
   freenect_stop_depth(kinect_device);
   freenect_set_led(kinect_device, LED_OFF);
   freenect_close_device(kinect_device);
