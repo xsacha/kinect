@@ -40,7 +40,9 @@ extern inline unsigned char Image_get_pixel(Image *img, unsigned int x, unsigned
 
 char Image_write_png_internal(Image *img, FILE *file, void *write_io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn) {
   png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!png) return 0;
+  if (!png) {
+    return 0;
+  }
 
   png_infop info = png_create_info_struct(png);
   if (!info) {
@@ -58,11 +60,6 @@ char Image_write_png_internal(Image *img, FILE *file, void *write_io_ptr, png_rw
     png_set_write_fn(png, write_io_ptr, write_data_fn, output_flush_fn);
   } else {
     png_init_io(png, file);
-  }
-
-  if (setjmp(png_jmpbuf(png))) {
-    png_destroy_write_struct(&png, (png_infopp)&info);
-    return 0;
   }
 
   png_set_IHDR(png, info, img->width, img->height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
