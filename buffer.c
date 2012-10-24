@@ -16,6 +16,8 @@ BufferCell *BufferCell_create(size_t size, unsigned char *data) {
     return 0;
   }
 
+  memcpy(buffer_cell->data, data, size);
+
   return buffer_cell;
 }
 
