@@ -2,9 +2,12 @@
 #include "image.h"
 #include "kinect.h"
 
+unsigned int kinect_last_depth_frame;
+
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
   int x, y;
   uint16_t *depth = (uint16_t*)v_depth;
+  kinect_depth_frame++;
 
   for (y = 0; y < 480; y++) {
     for (x = 0; x < 640; x++) {
@@ -37,7 +40,9 @@ int kinect_initialize() {
     return 0;
   }
 
-  kinect_depth_image = Image_create(640, 480);
+  kinect_depth_image = NULL;
+  kinect_depth_frame = 0;
+  kinect_last_depth_frame = 0;
 
   freenect_set_led(kinect_device, LED_GREEN);
   freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
@@ -53,7 +58,25 @@ int kinect_process_events() {
     return 0;
   }
 
-  return freenect_process_events(kinect_context) >= 0;
+  if (kinect_depth_image) {
+    Image_destroy(kinect_depth_image);
+  }
+
+  kinect_depth_image = Image_create(640, 480);
+
+  for (;;) {
+    int result = freenect_process_events(kinect_context);
+    if (result < 0) {
+      return result;
+    }
+
+    if (kinect_last_depth_frame != kinect_depth_frame) {
+      kinect_last_depth_frame = kinect_depth_frame;
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 void kinect_shutdown() {
@@ -61,7 +84,10 @@ void kinect_shutdown() {
     return;
   }
 
-  Image_destroy(kinect_depth_image);
+  if (kinect_depth_image) {
+    Image_destroy(kinect_depth_image);
+  }
+
   freenect_stop_depth(kinect_device);
   freenect_set_led(kinect_device, LED_OFF);
   freenect_close_device(kinect_device);
