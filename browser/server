@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+
+var BufferedNetstringStream = require('./netstring').BufferedNetstringStream;
+var http = require('http');
+var fs = require('fs');
+
+var clients = [], id = 0;
+
+function stream(req, res) {
+  res.writeHead(200, {
+    'Content-Type':  'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection':    'keep-alive'
+  });
+
+  clients.push(res);
+
+  req.on('close', function() {
+    var index = clients.indexOf(res);
+    if (index != -1) {
+      clients.splice(index, 1);
+    }
+  });
+}
+
+function serve(res, path, contentType) {
+  fs.readFile(path, function(err, data) {
+    if (err) {
+      res.writeHead(500, {'Content-Type': 'text/plain'});
+      res.write('500 Error');
+    } else {
+      res.writeHead(200, {'Content-Type': contentType});
+      res.write(data);
+    }
+    res.end();
+  });
+}
+
+function writeImage(image) {
+  var uri = 'data:image/png;base64,' + image.toString('base64');
+
+  clients.forEach(function(client) {
+    client.write('id: ' + id + '\n');
+    client.write('data: ' + uri + '\n\n');
+  });
+
+  id++;
+}
+
+var server = http.createServer(function(req, res) {
+  if (req.url == '/images') {
+    stream(req, res);
+  } else {
+    serve(res, __dirname + '/client.html', 'text/html');
+  }
+});
+
+process.stdin.resume();
+process.stdin.pipe(new BufferedNetstringStream).on('data', writeImage);
+server.listen(5600);

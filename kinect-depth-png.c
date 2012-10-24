@@ -21,11 +21,17 @@ void trap_signals() {
 
 void write_depth_png_netstring(FILE *file) {
   Buffer *buffer = Buffer_create();
-  if (Image_get_png(kinect_depth_image, buffer)) {
+  Image *image = Image_create(320, 240);
+
+  Image_downsample(kinect_depth_image, image);
+
+  if (Image_get_png(image, buffer)) {
     fprintf(file, "%lu:", buffer->size);
     Buffer_write(buffer, file);
     fputc(',', file);
   }
+
+  Image_destroy(image);
   Buffer_destroy(buffer);
 }
 
