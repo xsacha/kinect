@@ -68,7 +68,7 @@ use a `<canvas>` tag in conjunction with the
 [`drawImage`](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-drawimage)
 function to process the depth image inside a web page.
 
-[Example video](http://f.cl.ly/items/1z1R100K1O3R2I1I3F43/kinect%20png%20stream.mov)
+:tv: [Example video](http://f.cl.ly/items/1z1R100K1O3R2I1I3F43/kinect%20png%20stream.mov)
 
 Usage: Run `./kinect-depth-png | browser/server` in a terminal, then
 visit `http://localhost:5600/` in a browser.
