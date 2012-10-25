@@ -1,8 +1,24 @@
+#include <signal.h>
 #include <stdio.h>
 #include "image.h"
 #include "kinect.h"
 
 unsigned int kinect_last_depth_frame;
+unsigned int kinect_running;
+
+void kinect_handle_interrupt(int signal) {
+  kinect_running = 0;
+}
+
+void kinect_trap_signals() {
+  if (signal(SIGINT, kinect_handle_interrupt) == SIG_IGN) {
+    signal(SIGINT, SIG_IGN);
+  }
+
+  if (signal(SIGTERM, kinect_handle_interrupt) == SIG_IGN) {
+    signal(SIGTERM, SIG_IGN);
+  }
+}
 
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
   int x, y;
@@ -20,6 +36,9 @@ int kinect_initialize() {
   if (kinect_initialized) {
     return 0;
   }
+
+  kinect_running = 1;
+  kinect_trap_signals();
 
   if (freenect_init(&kinect_context, NULL) < 0) {
     fprintf(stderr, "freenect_init() failed\n");
@@ -65,6 +84,10 @@ int kinect_process_events() {
   kinect_depth_image = Image_create(640, 480);
 
   for (;;) {
+    if (!kinect_running) {
+      return 0;
+    }
+
     int result = freenect_process_events(kinect_context);
     if (result < 0) {
       return result;

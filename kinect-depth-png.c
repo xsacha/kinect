@@ -1,23 +1,5 @@
-#include <signal.h>
 #include <stdio.h>
-#include "image.h"
 #include "kinect.h"
-
-int running = 1;
-
-void handle_interrupt(int signal) {
-  running = 0;
-}
-
-void trap_signals() {
-  if (signal(SIGINT, handle_interrupt) == SIG_IGN) {
-    signal(SIGINT, SIG_IGN);
-  }
-
-  if (signal(SIGTERM, handle_interrupt) == SIG_IGN) {
-    signal(SIGTERM, SIG_IGN);
-  }
-}
 
 void write_depth_png_netstring(FILE *file) {
   Buffer *buffer = Buffer_create();
@@ -40,9 +22,7 @@ int main() {
     return 1;
   }
 
-  trap_signals();
-
-  while (running && kinect_process_events()) {
+  while (kinect_process_events()) {
     write_depth_png_netstring(stdout);
   }
 

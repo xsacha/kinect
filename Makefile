@@ -1,7 +1,7 @@
 all: kinect-depth-ascii kinect-depth-png
 
 CFLAGS=-O3 -I/usr/local/include/libfreenect
-LDFLAGS=-L/usr/local/lib -lpng -lfreenect
+LDFLAGS=-lpng -lfreenect
 
 kinect-depth-ascii: kinect.o image.o buffer.o kinect-depth-ascii.c
 	cc $(CFLAGS) $(LDFLAGS) -o $@ $^
