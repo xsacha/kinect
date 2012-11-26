@@ -17,6 +17,7 @@ struct winsize reset_frame(FILE *file) {
 void draw_depth_image(FILE *file, int width, int height) {
   Image *img = Image_create(width, height);
   Image_downsample(kinect_depth_image, img);
+  Image_equalize(img);
 
   int x, y;
   unsigned char pixel, c;
