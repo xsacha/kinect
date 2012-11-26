@@ -130,6 +130,18 @@ char Image_downsample(Image *src, Image *dst) {
   return 1;
 }
 
+void Image_invert(Image *img) {
+  int x, y;
+  Pixel pixel;
+
+  for (y = 0; y < img->height; y++) {
+    for (x = 0; x < img->width; x++) {
+      pixel = Image_get_pixel(img, x, y);
+      Image_set_pixel(img, x, y, MAX_PIXEL - pixel);
+    }
+  }
+}
+
 void Image_equalize(Image *img) {
   double histogram[MAX_PIXEL];
   double d = 1.0 / img->width / img->height;

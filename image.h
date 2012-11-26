@@ -36,6 +36,8 @@ char Image_get_png(Image *, Buffer *);
 
 char Image_downsample(Image *, Image *);
 
+void Image_invert(Image *);
+
 void Image_equalize(Image *);
 
 #endif
