@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+  <head>
+    <script type="text/javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(run, 1);
+      });
+
+      function run() {
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+
+        var buffer = document.createElement('canvas');
+        var width = buffer.width = canvas.width;
+        var height = buffer.height = canvas.height;
+        var bufferContext = buffer.getContext('2d');
+        var bufferData = bufferContext.createImageData(width, height);
+
+        var showDepth = true, threshold = 130;
+        var waiting = false;
+
+        document.getElementById('show_depth').addEventListener('click', function(event) {
+          showDepth = event.target.checked;
+        });
+
+        document.getElementById('threshold').addEventListener('change', function(event) {
+          threshold = event.target.value;
+          document.getElementById('threshold_value').innerText = threshold;
+        });
+
+        var image = new Image();
+        image.onload = function() {
+          bufferContext.drawImage(image, 0, 0);
+          var pixels = bufferContext.getImageData(0, 0, width, height).data;
+
+          if (showDepth) {
+            context.drawImage(image, 0, 0);
+          } else {
+            context.fillStyle = "#000";
+            context.fillRect(0, 0, width, height);
+          }
+
+          if (!waiting) {
+            worker.postMessage([pixels, threshold]);
+            waiting = true;
+          }
+
+          drawEdges();
+        };
+
+        var edges;
+        function drawEdges() {
+          if (edges) {
+            bufferData.data.set(edges);
+            bufferContext.putImageData(bufferData, 0, 0);
+            context.drawImage(buffer, 0, 0);
+          }
+        }
+
+        var source = new EventSource('/images');
+        source.addEventListener('message', function(event) {
+          image.src = event.data;
+        });
+
+        var worker = createWorker(process, width, height);
+        worker.addEventListener('message', function(event) {
+          edges = event.data;
+          waiting = false;
+          drawEdges();
+        });
+      }
+
+      function process(width, height) {
+        addEventListener('message', function(event) {
+          var pixels = event.data[0], threshold = event.data[1];
+          postMessage(findEdges(filter(pixels, threshold)));
+        });
+
+        function filter(pixels, threshold) {
+          var image = new Uint8ClampedArray(width * height * 4);
+
+          for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+              var offset = ((y * width) + x) * 4;
+              var value = pixels[offset];
+              if (value < threshold) value = 0;
+              image[offset + 0] = value;
+              image[offset + 1] = value;
+              image[offset + 2] = value;
+              image[offset + 3] = 0xFF;
+            }
+          }
+
+          return image;
+        }
+
+        function findEdges(pixels) {
+          var edges = new Uint8ClampedArray(width * height * 4);
+
+          function I(x, y) {
+            var offset = ((y * width) + x) * 4;
+            return pixels[offset];
+          }
+
+          function Gx(x, y) {
+            return I(x+1, y+1) + 2*I(x+1, y) + I(x+1, y-1) +
+              -I(x-1, y-1) - 2*I(x-1, y) - I(x-1, y-1);
+          }
+
+          function Gy(x, y) {
+            return I(x-1, y-1) + 2*I(x, y-1) + I(x+1, y-1) +
+              -I(x-1, y+1) - 2*I(x, y-1) - I(x+1, y-1);
+          }
+
+          function E(x, y) {
+            return Math.sqrt(
+              Math.pow(Gx(x, y), 2) +
+              Math.pow(Gy(x, y), 2)
+            );
+          }
+
+          for (var y = 1; y < height - 1; y++) {
+            for (var x = 1; x < width - 1; x++) {
+              var offset = ((y * width) + x) * 4;
+              var value = E(x, y);
+              edges[offset + 0] = 0xFF;
+              edges[offset + 1] = 0;
+              edges[offset + 2] = 0xFF;
+              edges[offset + 3] = value;
+            }
+          }
+
+          return edges;
+        }
+      }
+
+      function createWorker(source) {
+        var URL = window.URL || window.webkitURL;
+        var args = Array.prototype.slice.call(arguments, 1);
+        var script = '(' + source.toString() +
+          ').apply(this,' + JSON.stringify(args) + ')';
+        var blob = new Blob([script], {type: 'application/javascript'});
+        var url = URL.createObjectURL(blob);
+        var worker = new Worker(url);
+        return worker;
+      }
+    </script>
+    <style type="text/css">
+      #canvas { border: 1px solid #ccc; width: 320px; height: 240px }
+      fieldset { border: none; font-family: sans-serif; font-size: 13px; margin-top: 10px }
+      label { display: block; margin: 10px 0 }
+      label, label * { vertical-align: top }
+      span.label { margin-left: 20px }
+      #threshold { width: 255px }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="320" height="240"></canvas>
+    <fieldset>
+      <label>
+        <span class="label">Edge depth threshold: <span id="threshold_value">130</span></span><br>
+        <input id="threshold" type="range" min="0" max="255" step="1" value="130">
+      </label>
+      <label>
+        <input id="show_depth" type="checkbox" checked>
+        Show depth image
+      </label>
+    </fieldset>
+  </body>
+</html>

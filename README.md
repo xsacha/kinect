@@ -62,13 +62,11 @@ program, a Node.js web server that in turn streams the PNGs as
 Base64-encoded `data:` URIs using  [HTML5 Server-Sent
 Events](http://www.w3.org/TR/eventsource/).
 
-The example client simply sets an `<img>` tag's `src` attribute to the
-URI after each frame is received. However, it should be possible to
-use a `<canvas>` tag in conjunction with the
-[`drawImage`](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-drawimage)
-function to process the depth image inside a web page.
+The example client page simply sets an `<img>` tag's `src` attribute
+to the URI after each frame is received without further processing.
 
-:tv: [Example video](http://f.cl.ly/items/1z1R100K1O3R2I1I3F43/kinect%20png%20stream.mov)
+:movie_camera: [Watch video: Depth images streamed simultaneously to
+multiple browsers](http://f.cl.ly/items/1z1R100K1O3R2I1I3F43/kinect%20png%20stream.mov)
 
 Usage: Run `./kinect-depth-png | browser/server` in a terminal, then
 visit `http://localhost:5600/` in a browser.
@@ -76,6 +74,32 @@ visit `http://localhost:5600/` in a browser.
 Source code:
 [`browser/server`](https://github.com/sstephenson/kinect/blob/master/browser/server),
 [`browser/client.html`](https://github.com/sstephenson/kinect/blob/master/browser/client.html)
+
+
+## Example: Depth edge detection in the browser
+
+Building on the previous example, the `edge.html` example page
+demonstrates how to perform live edge detection of Kinect depth images
+in the browser.
+
+The streamed depth images are drawn to a `<canvas>` element using the
+[`drawImage`](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-drawimage)
+function. The depth image is then extracted into a typed array using
+[`getImageData`](http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-getimagedata)
+and passed to a [Web
+worker](http://www.whatwg.org/specs/web-apps/current-work/multipage/workers.html),
+where it is processed by the [Sobel
+operator](http://en.wikipedia.org/wiki/Sobel_operator) to detect
+edges. Then the computed edge image is returned back to the page and
+composited atop the depth image.
+
+:movie_camera: [Watch video: Live edge detection of Kinect depth
+images in the browser](http://f.cl.ly/items/3N21382j1Z1u2K2U3V1x/kinect%20edge%20detection.mov)
+
+Usage: As above, but visit `http://localhost:5600/edge.html`.
+
+Source code:
+[`browser/edge.html`](https://github.com/sstephenson/kinect/blob/master/browser/edge.html)
 
 
 -----
