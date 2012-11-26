@@ -23,11 +23,13 @@ void kinect_trap_signals() {
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
   int x, y;
   uint16_t *depth = (uint16_t*)v_depth;
+  uint16_t value;
   kinect_depth_frame++;
 
   for (y = 0; y < 480; y++) {
     for (x = 0; x < 640; x++) {
-      Image_set_pixel(kinect_depth_image, x, y, depth[y * 640 + x]);
+      value = depth[y * 640 + x];
+      Image_set_pixel(kinect_depth_image, x, y, 0xFF - (value >> 3));
     }
   }
 }
