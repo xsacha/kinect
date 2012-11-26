@@ -2,13 +2,20 @@
 #define __IMAGE_H__
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "buffer.h"
+
+typedef uint8_t Pixel;
+
+#define Pixel_get_red(p)   (uint8_t) p
+#define Pixel_get_green(p) (uint8_t) p
+#define Pixel_get_blue(p)  (uint8_t) p
 
 struct Image_t {
   unsigned int width;
   unsigned int height;
-  unsigned char *data;
+  Pixel *data;
 };
 
 typedef struct Image_t Image;
@@ -17,9 +24,9 @@ Image *Image_create(unsigned int, unsigned int);
 
 void Image_destroy(Image *);
 
-extern inline void Image_set_pixel(Image *, unsigned int, unsigned int, unsigned char);
+extern inline void Image_set_pixel(Image *, unsigned int, unsigned int, Pixel);
 
-extern inline unsigned char Image_get_pixel(Image *, unsigned int, unsigned int);
+extern inline Pixel Image_get_pixel(Image *, unsigned int, unsigned int);
 
 char Image_write_png(Image *, FILE *);
 

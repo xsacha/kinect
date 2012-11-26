@@ -7,7 +7,7 @@ Image *Image_create(unsigned int width, unsigned int height) {
   Image *img = (Image *)malloc(sizeof(Image));
   if (!img) return 0;
 
-  img->data = calloc(width * height, 1);
+  img->data = calloc(width * height * sizeof(Pixel), 1);
   if (!img->data) {
     free(img);
     return 0;
@@ -26,13 +26,13 @@ void Image_destroy(Image *img) {
   }
 }
 
-extern inline void Image_set_pixel(Image *img, unsigned int x, unsigned int y, unsigned char pixel) {
+extern inline void Image_set_pixel(Image *img, unsigned int x, unsigned int y, Pixel pixel) {
   if (x >= img->width) return;
   if (y >= img->height) return;
   img->data[y * img->width + x] = pixel;
 }
 
-extern inline unsigned char Image_get_pixel(Image *img, unsigned int x, unsigned int y) {
+extern inline Pixel Image_get_pixel(Image *img, unsigned int x, unsigned int y) {
   if (x >= img->width) return 0;
   if (y >= img->height) return 0;
   return img->data[y * img->width + x];
@@ -66,15 +66,15 @@ char Image_write_png_internal(Image *img, FILE *file, void *write_io_ptr, png_rw
   png_write_info(png, info);
 
   int x, y;
-  unsigned char pixel;
+  Pixel pixel;
   png_bytep row = (png_bytep)malloc(img->width * 3 * sizeof(png_byte));
 
   for (y = 0; y < img->height; y++) {
     for (x = 0; x < img->width; x++) {
       pixel = Image_get_pixel(img, x, y);
-      row[(x * 3) + 0] = pixel;
-      row[(x * 3) + 1] = pixel;
-      row[(x * 3) + 2] = pixel;
+      row[(x * 3) + 0] = Pixel_get_red(pixel);
+      row[(x * 3) + 1] = Pixel_get_green(pixel);
+      row[(x * 3) + 2] = Pixel_get_blue(pixel);
     }
     png_write_row(png, row);
   }
@@ -107,7 +107,7 @@ char Image_downsample(Image *src, Image *dst) {
   if (dst->height > src->height) return 0;
 
   int src_x, src_y, dst_x, dst_y, dst_offset, dst_offset_max = 0;
-  unsigned char src_pixel, dst_pixel;
+  Pixel src_pixel, dst_pixel;
 
   for (src_y = 0; src_y < src->height; src_y++) {
     for (src_x = 0; src_x < src->width; src_x++) {
