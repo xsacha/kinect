@@ -129,3 +129,38 @@ char Image_downsample(Image *src, Image *dst) {
 
   return 1;
 }
+
+void Image_equalize(Image *img) {
+  double histogram[MAX_PIXEL];
+  double d = 1.0 / img->width / img->height;
+  int i;
+
+  for (i = 0; i < MAX_PIXEL; i++) {
+    histogram[i] = 0;
+  }
+
+  int x, y;
+  Pixel pixel;
+
+  for (y = 0; y < img->height; y++) {
+    for (x = 0; x < img->width; x++) {
+      pixel = Image_get_pixel(img, x, y);
+      histogram[pixel] += d;
+    }
+  }
+
+  double sum = 0;
+  Pixel lookup[MAX_PIXEL];
+
+  for (i = 0; i < MAX_PIXEL; i++) {
+    sum += histogram[i];
+    lookup[i] = sum * (MAX_PIXEL - 1) + 0.5;
+  }
+
+  for (y = 0; y < img->height; y++) {
+    for (x = 0; x < img->width; x++) {
+      pixel = Image_get_pixel(img, x, y);
+      Image_set_pixel(img, x, y, lookup[pixel]);
+    }
+  }
+}

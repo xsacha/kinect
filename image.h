@@ -8,6 +8,8 @@
 
 typedef uint8_t Pixel;
 
+#define MAX_PIXEL (1 << sizeof(Pixel) * 8)
+
 #define Pixel_get_red(p)   (uint8_t) p
 #define Pixel_get_green(p) (uint8_t) p
 #define Pixel_get_blue(p)  (uint8_t) p
@@ -33,5 +35,7 @@ char Image_write_png(Image *, FILE *);
 char Image_get_png(Image *, Buffer *);
 
 char Image_downsample(Image *, Image *);
+
+void Image_equalize(Image *);
 
 #endif
