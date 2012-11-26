@@ -50,6 +50,8 @@ function writeImage(image) {
 var server = http.createServer(function(req, res) {
   if (req.url == '/images') {
     stream(req, res);
+  } else if (req.url.match(/^\/\w+\.html$/)) {
+    serve(res, __dirname + req.url, 'text/html');
   } else {
     serve(res, __dirname + '/client.html', 'text/html');
   }
