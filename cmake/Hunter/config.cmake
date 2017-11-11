@@ -1,0 +1,50 @@
+hunter_config(ZLIB VERSION 1.2.8-p3)
+hunter_config(OpenCV VERSION 3.3.0-p2 CMAKE_ARGS
+                                                WITH_1394=OFF
+                                                WITH_CUDA=OFF
+                                                WITH_CUFFT=OFF
+                                                CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE=OFF
+                                                WITH_EIGEN=OFF
+                                                WITH_FFMPEG=OFF
+                                                WITH_GSTREAMER=OFF
+                                                WITH_GTK=ON
+                                                WITH_OPENEXR=OFF
+                                                WITH_PVAPI=OFF
+                                                WITH_QT=OFF
+                                                WITH_UNICAP=OFF
+						WITH_V4L=ON
+                                                WITH_VFW=OFF
+                                                WITH_DSHOW=OFF
+                                                WITH_XINE=OFF
+                                                WITH_DIRECTX=OFF
+                                                WITH_OPENCL=ON
+                                                WITH_MATLAB=OFF
+                                                WITH_1394=OFF
+                                                ENABLE_SSSE3=ON
+                                                ENABLE_SSE41=ON
+                                                USE_IPP=ON
+                                                BUILD_WITH_STATIC_CRT=0
+                                                BUILD_EXAMPLES=OFF
+                                                BUILD_PERF_TESTS=OFF
+                                                BUILD_DOCS=OFF
+                                                BUILD_TESTS=OFF
+                                                BUILD_opencv_shape=OFF
+                                                BUILD_opencv_superres=OFF
+                                                BUILD_opencv_videostab=OFF
+                                                BUILD_opencv_stitching=OFF
+                                                BUILD_opencv_cudastereo=OFF
+                                                BUILD_opencv_cudaoptflow=OFF
+                                                BUILD_opencv_cudalegacy=OFF
+                                                BUILD_opencv_cudaimgproc=OFF
+                                                BUILD_opencv_cudafilters=OFF
+                                                BUILD_opencv_cudafeatures2d=OFF
+                                                BUILD_opencv_cudacodec=OFF
+                                                BUILD_opencv_cudabgsegm=OFF
+                                                BUILD_opencv_python=OFF
+                                                BUILD_opencv_python2=OFF
+                                                BUILD_opencv_calib3d=OFF
+                                                BUILD_opencv_dnn=OFF
+                                                BUILD_opencv_flann=OFF
+                                                BUILD_opencv_ml=OFF
+
+)
