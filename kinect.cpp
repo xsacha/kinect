@@ -3,6 +3,8 @@
 #include "image.h"
 #include "kinect.h"
 
+#define DEPTH
+
 unsigned int kinect_last_depth_frame;
 unsigned int kinect_running;
 
@@ -18,6 +20,10 @@ void kinect_trap_signals() {
   if (signal(SIGTERM, kinect_handle_interrupt) == SIG_IGN) {
     signal(SIGTERM, SIG_IGN);
   }
+}
+
+void kinect_capture_video_image(freenect_device *dev, void *v_video, uint32_t timestamp) {
+  uint8_t *video = (uint8_t*)v_video;
 }
 
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
@@ -66,9 +72,15 @@ int kinect_initialize() {
   kinect_last_depth_frame = 0;
 
   freenect_set_led(kinect_device, LED_GREEN);
-  freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
-  freenect_set_depth_mode(kinect_device, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
-  freenect_start_depth(kinect_device);
+  #ifdef DEPTH
+    freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
+    freenect_set_depth_mode(kinect_device, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
+    freenect_start_depth(kinect_device);
+  #else
+    freenect_set_video_callback(kinect_device, kinect_capture_video_image);
+    freenect_set_video_mode(kinect_device, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_RGB));
+    freenect_start_video(kinect_device);
+  #endif
 
   kinect_initialized = 1;
   return 1;
@@ -113,7 +125,11 @@ void kinect_shutdown() {
     Image_destroy(kinect_depth_image);
   }
 
+#ifdef DEPTH
   freenect_stop_depth(kinect_device);
+#else
+  freenect_stop_video(kinect_device);
+#endif
   freenect_set_led(kinect_device, LED_OFF);
   freenect_close_device(kinect_device);
   freenect_shutdown(kinect_context);

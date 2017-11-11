@@ -9,7 +9,7 @@ Image *Image_create(unsigned int width, unsigned int height) {
 
   img->data = new Pixel[width * height]();
   if (!img->data) {
-    free(img);
+    delete img;
     return 0;
   }
 
