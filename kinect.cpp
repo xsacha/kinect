@@ -1,12 +1,26 @@
 #include <signal.h>
 #include <stdio.h>
-#include "image.h"
+#include <mutex>
 #include "kinect.h"
 
-#define DEPTH
-
-unsigned int kinect_last_depth_frame;
 unsigned int kinect_running;
+static int last_frame = 0;
+static int frame = 0;
+cv::Mat rgbMat;
+cv::Mat depthMat;
+
+std::mutex rgbMat_mutex;  // protects rgbMat
+std::mutex depthMat_mutex;  // protects depthMat
+
+cv::Mat getRGB()
+{
+  return rgbMat;
+}
+
+cv::Mat getDepth()
+{
+  return depthMat;
+}
 
 void kinect_handle_interrupt(int signal) {
   kinect_running = 0;
@@ -23,28 +37,39 @@ void kinect_trap_signals() {
 }
 
 void kinect_capture_video_image(freenect_device *dev, void *v_video, uint32_t timestamp) {
-  uint8_t *video = (uint8_t*)v_video;
+  std::lock_guard<std::mutex> lock(rgbMat_mutex);
+  uint8_t* rgb = static_cast<uint8_t*>(v_video);
+  fprintf(stderr, "Drawing to rgbMat: %dx%d\n", rgbMat.cols, rgbMat.rows);
+  rgbMat.data = rgb;
+  frame++;
 }
 
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
-  int x, y;
-  uint16_t *depth = (uint16_t*)v_depth;
-  uint16_t value;
-  kinect_depth_frame++;
-
-  for (y = 0; y < 480; y++) {
-    for (x = 0; x < 640; x++) {
-      value = depth[y * 640 + x];
-      Image_set_pixel(kinect_depth_image, x, y, (Pixel)(0xFF - (value >> 3)));
+  std::lock_guard<std::mutex> lock(depthMat_mutex);
+  uint16_t* depth = static_cast<uint16_t*>(v_depth);
+  fprintf(stderr, "Drawing to depthMat: %dx%d\n", depthMat.cols, depthMat.rows);
+  for(int y = 0; y < depthMat.rows; ++y)
+  {
+    for (int x = 0; x < depthMat.cols; ++x)
+    {
+        uint16_t val = depth[y * 640 + x];
+        val = std::max(0, val - 0x1FF);
+        if (val > 0x1FF)
+            val = 0x1FF;
+        depthMat.at<uint8_t>(y,x) = 0xFF - (uint8_t)(val >> 1);
     }
   }
+  frame++;
 }
+
 
 int kinect_initialize() {
   if (kinect_initialized) {
     return 0;
   }
 
+  rgbMat = cv::Mat(cv::Size(640, 480), CV_8UC3, cv::Scalar(0));
+  depthMat = cv::Mat(cv::Size(640,480), CV_8UC1, cv::Scalar(0));
   kinect_running = 1;
   kinect_trap_signals();
 
@@ -67,20 +92,18 @@ int kinect_initialize() {
     return 0;
   }
 
-  kinect_depth_image = NULL;
-  kinect_depth_frame = 0;
-  kinect_last_depth_frame = 0;
-
   freenect_set_led(kinect_device, LED_GREEN);
-  #ifdef DEPTH
-    freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
-    freenect_set_depth_mode(kinect_device, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
-    freenect_start_depth(kinect_device);
-  #else
-    freenect_set_video_callback(kinect_device, kinect_capture_video_image);
-    freenect_set_video_mode(kinect_device, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_RGB));
-    freenect_start_video(kinect_device);
-  #endif
+#ifdef DEPTH
+  freenect_set_ir_brightness(kinect_device, 50);
+  freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
+  freenect_set_depth_mode(kinect_device, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
+  freenect_start_depth(kinect_device);
+#else
+  freenect_set_ir_brightness(kinect_device, 1);
+  freenect_set_video_callback(kinect_device, kinect_capture_video_image);
+  freenect_set_video_mode(kinect_device, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
+  freenect_start_video(kinect_device);
+#endif
 
   kinect_initialized = 1;
   return 1;
@@ -91,12 +114,6 @@ int kinect_process_events() {
     return 0;
   }
 
-  if (kinect_depth_image) {
-    Image_destroy(kinect_depth_image);
-  }
-
-  kinect_depth_image = Image_create(640, 480);
-
   for (;;) {
     if (!kinect_running) {
       return 0;
@@ -106,11 +123,11 @@ int kinect_process_events() {
     if (result < 0) {
       return result;
     }
-
-    if (kinect_last_depth_frame != kinect_depth_frame) {
-      kinect_last_depth_frame = kinect_depth_frame;
-      return 1;
+    if (last_frame != frame) {
+        last_frame = frame;
+        return 1;
     }
+
   }
 
   return 0;
@@ -119,10 +136,6 @@ int kinect_process_events() {
 void kinect_shutdown() {
   if (!kinect_initialized) {
     return;
-  }
-
-  if (kinect_depth_image) {
-    Image_destroy(kinect_depth_image);
   }
 
 #ifdef DEPTH

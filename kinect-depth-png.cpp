@@ -1,23 +1,27 @@
 #include <stdio.h>
 #include "kinect.h"
+#include "image.h"
 #include "buffer.h"
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 void write_depth_png_netstring(FILE *file) {
+#ifdef DEPTH
+  cv::Mat mat = getDepth();
+#else
+  cv::Mat mat = getRGB();
+#endif
+  if (mat.empty())
+  {
+    return;
+  }
+
   Buffer *buffer = Buffer_create();
-  Image *image = Image_create(320, 240);
-
-  cv::Mat mat = cv::Mat(640, 480, CV_8UC3, kinect_depth_image);
-
-  Image_downsample(kinect_depth_image, image);
-
-  if (Image_get_png(image, buffer)) {
-    fprintf(file, "%lu:", buffer->size);
+  if (Image_get_png(getDepth(), buffer)) {
+    fprintf(file, "%zu:", buffer->size);
     Buffer_write(buffer, file);
     fputc(',', file);
   }
 
-  Image_destroy(image);
   Buffer_destroy(buffer);
 }
 
