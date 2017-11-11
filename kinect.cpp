@@ -29,7 +29,7 @@ void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t ti
   for (y = 0; y < 480; y++) {
     for (x = 0; x < 640; x++) {
       value = depth[y * 640 + x];
-      Image_set_pixel(kinect_depth_image, x, y, 0xFF - (value >> 3));
+      Image_set_pixel(kinect_depth_image, x, y, (Pixel)(0xFF - (value >> 3)));
     }
   }
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "kinect.h"
+#include "buffer.h"
 
 void write_depth_png_netstring(FILE *file) {
   Buffer *buffer = Buffer_create();

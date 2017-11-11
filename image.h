@@ -1,5 +1,4 @@
-#ifndef __IMAGE_H__
-#define __IMAGE_H__
+#pragma once
 
 #include <stdio.h>
 #include <stdint.h>
@@ -26,9 +25,9 @@ Image *Image_create(unsigned int, unsigned int);
 
 void Image_destroy(Image *);
 
-extern inline void Image_set_pixel(Image *, unsigned int, unsigned int, Pixel);
+void Image_set_pixel(Image *, unsigned int, unsigned int, Pixel);
 
-extern inline Pixel Image_get_pixel(Image *, unsigned int, unsigned int);
+Pixel Image_get_pixel(Image *, unsigned int, unsigned int);
 
 char Image_write_png(Image *, FILE *);
 
@@ -39,5 +38,3 @@ char Image_downsample(Image *, Image *);
 void Image_invert(Image *);
 
 void Image_equalize(Image *);
-
-#endif

@@ -4,10 +4,10 @@
 #include "image.h"
 
 Image *Image_create(unsigned int width, unsigned int height) {
-  Image *img = (Image *)malloc(sizeof(Image));
+  Image *img = new Image();
   if (!img) return 0;
 
-  img->data = calloc(width * height * sizeof(Pixel), 1);
+  img->data = new Pixel[width * height]();
   if (!img->data) {
     free(img);
     return 0;
@@ -21,18 +21,19 @@ Image *Image_create(unsigned int width, unsigned int height) {
 
 void Image_destroy(Image *img) {
   if (img) {
-    if (img->data) free(img->data);
-    free(img);
+    if (img->data)
+      delete img->data;
+    delete img;
   }
 }
 
-extern inline void Image_set_pixel(Image *img, unsigned int x, unsigned int y, Pixel pixel) {
+void Image_set_pixel(Image *img, unsigned int x, unsigned int y, Pixel pixel) {
   if (x >= img->width) return;
   if (y >= img->height) return;
   img->data[y * img->width + x] = pixel;
 }
 
-extern inline Pixel Image_get_pixel(Image *img, unsigned int x, unsigned int y) {
+Pixel Image_get_pixel(Image *img, unsigned int x, unsigned int y) {
   if (x >= img->width) return 0;
   if (y >= img->height) return 0;
   return img->data[y * img->width + x];

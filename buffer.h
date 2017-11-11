@@ -1,10 +1,9 @@
-#ifndef __BUFFER_H__
-#define __BUFFER_H__
+#pragma once
 
 #include <stddef.h>
+#include <stdio.h>
 
 #ifdef DEBUG
-#include <stdio.h>
 #define Buffer_debug(message) fprintf(stderr, "%s\n", message)
 #else
 #define Buffer_debug(message)
@@ -40,5 +39,3 @@ int Buffer_append_cell(Buffer *, BufferCell *);
 unsigned char *Buffer_copy(Buffer *, unsigned char *, size_t);
 unsigned char *Buffer_extract(Buffer *);
 size_t Buffer_write(Buffer *, FILE *file);
-
-#endif
