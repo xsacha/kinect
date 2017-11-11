@@ -18,10 +18,10 @@ find_package(libfreenect QUIET)
 if(FREENECT_FOUND)
   # Linux
   target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/include/libfreenect)
-  target_link_libraries(${PROJECT_NAME} PRIVATE hdf5 ${FREENECT_LIBRARIES} png)
+  target_link_libraries(${PROJECT_NAME} PRIVATE hdf5 ${FREENECT_LIBRARIES})
 else()
   # Windows
   target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libfreenect/include)
-  target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/libfreenect/lib/freenect.lib ${CMAKE_SOURCE_DIR}/libfreenect/lib/libpng.lib)
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/libfreenect/lib/freenect.lib)
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT})
