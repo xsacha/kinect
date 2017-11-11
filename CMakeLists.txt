@@ -1,9 +1,27 @@
 cmake_minimum_required(VERSION 3.6)
+
+# hunter default config file in cmake/Hunter/config.cmake
+include(cmake/Hunter/HunterGate.cmake)
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.19.148.tar.gz"
+    SHA1 "63631441d472a0f8d80f8efefa02b544193aafea"
+    LOCAL
+)
 project(kinect-depth-png)
 
-add_executable(${PROJECT_NAME} kinect.cpp buffer.cpp image.cpp kinect-depth-png.cpp)
+hunter_add_package(OpenCV)
 find_package(OpenCV REQUIRED)
 find_package(Threads REQUIRED)
-find_package(libfreenect REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/include/libfreenect)
-target_link_libraries(${PROJECT_NAME} PRIVATE hdf5 ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${FREENECT_LIBRARIES} png)
+
+add_executable(${PROJECT_NAME} kinect.cpp buffer.cpp image.cpp kinect-depth-png.cpp)
+find_package(libfreenect QUIET)
+if(FREENECT_FOUND)
+  # Linux
+  target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/include/libfreenect)
+  target_link_libraries(${PROJECT_NAME} PRIVATE hdf5 ${FREENECT_LIBRARIES} png)
+else()
+  # Windows
+  target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libfreenect/include)
+  target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/libfreenect/lib/freenect.lib ${CMAKE_SOURCE_DIR}/libfreenect/lib/libpng.lib)
+endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT})
