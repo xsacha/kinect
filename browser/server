@@ -37,7 +37,7 @@ function serve(res, path, contentType) {
 }
 
 function writeImage(image) {
-  var uri = 'data:image/png;base64,' + image.toString('base64');
+  var uri = 'data:image/jpeg;base64,' + image.toString('base64');
 
   clients.forEach(function(client) {
     client.write('id: ' + id + '\n');

@@ -16,8 +16,11 @@ int main() {
     {
       continue;
     }
+    cv::vector<int> compression_params;
+    compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+    compression_params.push_back(85);
     std::vector<uchar> buff;
-    cv::imencode(".png", mat, buff);
+    cv::imencode(".jpg", mat, buff, compression_params);
     fprintf(stdout, "%zu:", buff.size());
     for (auto i = buff.begin(); i != buff.end(); ++i)
       fputc(*i, stdout);
