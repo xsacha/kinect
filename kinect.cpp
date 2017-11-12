@@ -47,7 +47,6 @@ void kinect_capture_video_image(freenect_device *dev, void *v_video, uint32_t ti
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
   std::lock_guard<std::mutex> lock(depthMat_mutex);
   uint16_t* depth = static_cast<uint16_t*>(v_depth);
-  fprintf(stderr, "Drawing to depthMat: %dx%d\n", depthMat.cols, depthMat.rows);
   for(int y = 0; y < depthMat.rows; ++y)
   {
     for (int x = 0; x < depthMat.cols; ++x)

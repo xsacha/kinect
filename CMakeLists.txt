@@ -11,14 +11,14 @@ project(kinect-depth-png)
 
 #hunter_add_package(OpenCV)
 #find_package(OpenCV REQUIRED)
-set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui png)
+set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui)
 set(FREENECT_FOUND TRUE)
 set(FREENECT_LIBRARIES freenect)
 
 
 find_package(Threads REQUIRED)
 
-add_executable(${PROJECT_NAME} kinect.cpp buffer.cpp image.cpp kinect-depth-png.cpp)
+add_executable(${PROJECT_NAME} kinect.cpp kinect-depth-png.cpp)
 find_package(libfreenect QUIET)
 if(FREENECT_FOUND)
   # Linux

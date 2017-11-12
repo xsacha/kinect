@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEPTH
+//#define DEPTH
 
 #include <libfreenect.h>
 #include <opencv2/core/core.hpp>
