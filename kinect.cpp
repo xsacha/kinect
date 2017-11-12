@@ -39,8 +39,8 @@ void kinect_trap_signals() {
 void kinect_capture_video_image(freenect_device *dev, void *v_video, uint32_t timestamp) {
   std::lock_guard<std::mutex> lock(rgbMat_mutex);
   uint8_t* rgb = static_cast<uint8_t*>(v_video);
-  fprintf(stderr, "Drawing to rgbMat: %dx%d\n", rgbMat.cols, rgbMat.rows);
   rgbMat.data = rgb;
+  cv::cvtColor(rgbMat, rgbMat, cv::COLOR_RGB2BGR);
   frame++;
 }
 
@@ -99,10 +99,12 @@ int kinect_initialize() {
   freenect_start_depth(kinect_device);
 #else
   freenect_set_ir_brightness(kinect_device, 1);
+#endif
+  freenect_set_flag(kinect_device, FREENECT_AUTO_EXPOSURE, FREENECT_ON);
+  freenect_set_flag(kinect_device, FREENECT_AUTO_WHITE_BALANCE, FREENECT_ON);
   freenect_set_video_callback(kinect_device, kinect_capture_video_image);
   freenect_set_video_mode(kinect_device, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
   freenect_start_video(kinect_device);
-#endif
 
   kinect_initialized = 1;
   return 1;
@@ -139,9 +141,8 @@ void kinect_shutdown() {
 
 #ifdef DEPTH
   freenect_stop_depth(kinect_device);
-#else
-  freenect_stop_video(kinect_device);
 #endif
+  freenect_stop_video(kinect_device);
   freenect_set_led(kinect_device, LED_OFF);
   freenect_close_device(kinect_device);
   freenect_shutdown(kinect_context);
