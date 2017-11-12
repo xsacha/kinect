@@ -7,6 +7,7 @@ function BufferedNetstringStream() {
   this.readable = true;
   this.writable = true;
   this.length = null;
+  this.isDepth = true;
   this.buffer = null;
   this.offset = 0;
 }
@@ -24,8 +25,13 @@ function readLength(buffer, offset) {
       this.length = (this.length * 10) + value;
       return false;
     }
-  } else if (char == 58) {
+  } else if (char == 100) {
     this.length += 1;
+    this.isDepth = true;
+    return true;
+  } else if (char == 114) {
+    this.length += 1;
+    this.isDepth = false;
     return true;
   } else {
     throw Error('malformed payload length header');
@@ -59,7 +65,7 @@ BufferedNetstringStream.prototype.write = function(data) {
           this.emit('error', Error('payload length mismatch'));
           return this.destroy();
         }
-        this.emit('data', this.buffer.slice(0, this.length - 1));
+        this.emit('data', this.buffer.slice(0, this.length - 1), this.isDepth);
         this.buffer = null;
         this.length = null;
         this.offset = 0;

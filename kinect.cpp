@@ -5,7 +5,9 @@
 
 unsigned int kinect_running;
 static int last_frame = 0;
+static int last_rgb_frame = 0;
 static int frame = 0;
+static int rgb_frame = 0;
 cv::Mat rgbMat;
 cv::Mat depthMat;
 
@@ -41,7 +43,7 @@ void kinect_capture_video_image(freenect_device *dev, void *v_video, uint32_t ti
   uint8_t* rgb = static_cast<uint8_t*>(v_video);
   rgbMat.data = rgb;
   cv::cvtColor(rgbMat, rgbMat, cv::COLOR_RGB2BGR);
-  frame++;
+  rgb_frame++;
 }
 
 void kinect_capture_depth_image(freenect_device *dev, void *v_depth, uint32_t timestamp) {
@@ -77,7 +79,7 @@ int kinect_initialize() {
     return 0;
   }
 
-  freenect_select_subdevices(kinect_context, (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA));
+  freenect_select_subdevices(kinect_context, (freenect_device_flags)(/*FREENECT_DEVICE_MOTOR |*/ FREENECT_DEVICE_CAMERA));
 
   if (freenect_num_devices(kinect_context) < 1) {
     fprintf(stderr, "no devices found\n");
@@ -92,14 +94,10 @@ int kinect_initialize() {
   }
 
   freenect_set_led(kinect_device, LED_GREEN);
-#ifdef DEPTH
-  freenect_set_ir_brightness(kinect_device, 50);
+  freenect_set_ir_brightness(kinect_device, 20);
   freenect_set_depth_callback(kinect_device, kinect_capture_depth_image);
   freenect_set_depth_mode(kinect_device, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
   freenect_start_depth(kinect_device);
-#else
-  freenect_set_ir_brightness(kinect_device, 1);
-#endif
   freenect_set_flag(kinect_device, FREENECT_AUTO_EXPOSURE, FREENECT_ON);
   freenect_set_flag(kinect_device, FREENECT_AUTO_WHITE_BALANCE, FREENECT_ON);
   freenect_set_video_callback(kinect_device, kinect_capture_video_image);
@@ -124,9 +122,17 @@ int kinect_process_events() {
     if (result < 0) {
       return result;
     }
-    if (last_frame != frame) {
-        last_frame = frame;
+    if (last_rgb_frame != rgb_frame) {
+        if (rgb_frame > 500000)
+            rgb_frame = 0;
+        last_rgb_frame = rgb_frame;
         return 1;
+    }
+    if (last_frame != frame) {
+        if (frame > 500000)
+            frame = 0;
+        last_frame = frame;
+        return 2;
     }
 
   }
@@ -139,9 +145,7 @@ void kinect_shutdown() {
     return;
   }
 
-#ifdef DEPTH
   freenect_stop_depth(kinect_device);
-#endif
   freenect_stop_video(kinect_device);
   freenect_set_led(kinect_device, LED_OFF);
   freenect_close_device(kinect_device);

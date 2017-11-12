@@ -4,7 +4,7 @@ var BufferedNetstringStream = require('./netstring').BufferedNetstringStream;
 var http = require('http');
 var fs = require('fs');
 
-var clients = [], id = 0;
+var clients = [], idd = 500000, idr = 0;
 
 function stream(req, res) {
   res.writeHead(200, {
@@ -36,8 +36,9 @@ function serve(res, path, contentType) {
   });
 }
 
-function writeImage(image) {
+function writeImage(image, isDepth) {
   var uri = 'data:image/jpeg;base64,' + image;
+  var id = isDepth ? idd : idr;
 
   clients.forEach(function(client) {
     client.write('id: ' + id + '\n');
@@ -45,6 +46,16 @@ function writeImage(image) {
   });
 
   id++;
+
+  if (isDepth) {
+    if (id > 1000000)
+      id = 500000;
+    idd = id;
+  } else {
+    if (id > 500000)
+      id = 0;
+    idr = id;
+  }
 }
 
 var server = http.createServer(function(req, res) {

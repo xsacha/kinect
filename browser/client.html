@@ -3,13 +3,22 @@
   <head>
     <script type="text/javascript">
       function run() {
-        var image = document.getElementById('image');
-        var frame = document.getElementById('frame');
+        var rgbimage = document.getElementById('rgbimage');
+        var depthimage = document.getElementById('depthimage');
+        var rgbframe = document.getElementById('rgbframe');
+        var depthframe = document.getElementById('depthframe');
         var source = new EventSource('/images');
 
         source.addEventListener('message', function(event) {
-          image.src = event.data;
-          frame.innerText = event.lastEventId;
+          var id = event.lastEventId;
+          if (id > 500000)
+          {
+            depthimage.src = event.data;
+            depthframe.innerText = id - 500000;
+          } else {
+            rgbimage.src = event.data;
+            rgbframe.innerText = id;
+          }
         });
       }
 
@@ -23,7 +32,7 @@
     </style>
   </head>
   <body>
-    <img id="image">
-    <div id="frame"></div>
+    <img id="rgbimage"><img id="depthimage">
+    <div id="rgbframe"></div><div id="depthframe"></div>
   </body>
 </html>
