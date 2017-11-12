@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "base64.h"
 #include "kinect.h"
 
 int main() {
@@ -21,10 +22,8 @@ int main() {
     compression_params.push_back(85);
     std::vector<uchar> buff;
     cv::imencode(".jpg", mat, buff, compression_params);
-    fprintf(stdout, "%zu:", buff.size());
-    for (auto i = buff.begin(); i != buff.end(); ++i)
-      fputc(*i, stdout);
-    fputc(',', stdout);
+    auto basedStr = base64_encode(buff.data(), buff.size());
+    fprintf(stdout, "%zu:%s,", basedStr.size(), basedStr.c_str());
   }
 
   kinect_shutdown();
